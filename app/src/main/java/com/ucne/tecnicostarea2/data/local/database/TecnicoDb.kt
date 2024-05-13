@@ -9,7 +9,7 @@ import com.ucne.tecnicostarea2.data.local.entities.TecnicoEntity
     entities = [
         TecnicoEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class TecnicoDb: RoomDatabase() {
