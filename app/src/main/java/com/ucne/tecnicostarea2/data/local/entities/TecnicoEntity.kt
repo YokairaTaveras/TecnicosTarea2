@@ -8,5 +8,6 @@ data class TecnicoEntity(
     @PrimaryKey
     var tecnicoId: Int?= null,
     var nombres: String? = null,
-    var sueldoHora: Double?= null
+    var sueldoHora: String = null.toString(),
+    var tipoId: Int? = null
 )
