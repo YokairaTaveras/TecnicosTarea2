@@ -7,31 +7,46 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.ucne.tecnicostarea2.Screen
+import com.ucne.tecnicostarea2.presentation.components.TopAppBar
 import com.ucne.tecnicostarea2.ui.theme.TecnicosTarea2Theme
+import kotlinx.coroutines.launch
 
 var nombreRepetido by mutableStateOf(false)
 @Composable
 fun TecnicoScreen(
-    viewModel: TecnicoViewModel){
+    viewModel: TecnicoViewModel,
+    navController: NavHostController){
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         TecnicoBody(
             uiState = uiState,
@@ -39,7 +54,8 @@ fun TecnicoScreen(
             onDeleteTecnico = { viewModel.deleteTecnico() },
             onNewTecnico = { viewModel.newTecnico() },
             onNombreChanged =  viewModel::onNombreChanged,
-            onSueldoHoraChanged = viewModel::onSueldoHoraChanged
+            onSueldoHoraChanged = viewModel::onSueldoHoraChanged,
+            navController = navController
         )
     }
 
@@ -52,9 +68,39 @@ private fun TecnicoBody(
     onDeleteTecnico: () -> Unit = {},
     onNombreChanged: (String) -> Unit,
     onSueldoHoraChanged: (String) -> Unit,
-    onNewTecnico: () -> Unit
+    onNewTecnico: () -> Unit,
+    navController: NavHostController
 ) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    val scope = rememberCoroutineScope()
+    var drawerState = rememberDrawerState(DrawerValue.Closed)
+
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet(
+                Modifier.requiredWidth(220.dp)
+            ) {
+                Text(text = "Tecnicos", modifier = Modifier.padding(16.dp))
+                Divider()
+
+                NavigationDrawerItem(
+                    label = { Text(text = "Tecnicos") },
+                    selected = false,
+                    onClick = { navController.navigate(Screen.TipoTecnicoList) },
+                    icon = {
+                        Icon(imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Tecnicos")
+                    })
+            }
+
+
+        },
+        drawerState = drawerState) {
+    }
+
+    Scaffold(modifier = Modifier.fillMaxSize(),
+        topBar = { TopAppBar(title = "Tecnicos",
+            onDrawerClicked = {scope.launch { drawerState.open() }})
+        }) { innerPadding ->
 
         Column(
             modifier = Modifier
@@ -157,6 +203,7 @@ private fun TecnicoBody(
 
         }
     }
+
 }
 @Preview
 @Composable
@@ -168,7 +215,8 @@ private fun TecnicoPreview() {
             onNombreChanged = {},
             onSueldoHoraChanged = {},
             onNewTecnico = {},
-            onDeleteTecnico = {}
+            onDeleteTecnico = {},
+            navController = rememberNavController()
         )
     }
 }
