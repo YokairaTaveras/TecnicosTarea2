@@ -15,7 +15,7 @@ interface TipoTecnicoDao {
     @Query(
         """
         SELECT * 
-        FROM TipoTecnico 
+        FROM TiposTecnicos 
         WHERE tipoTecnicoId=:id  
         LIMIT 1
         """
@@ -25,6 +25,6 @@ interface TipoTecnicoDao {
     @Delete
     suspend fun delete(tipoTecnico: TipoTecnicoEntity)
 
-    @Query("SELECT * FROM TipoTecnico")
+    @Query("SELECT * FROM TiposTecnicos")
     fun getAll(): Flow<List<TipoTecnicoEntity>>
 }
