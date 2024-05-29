@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
@@ -17,10 +19,16 @@ import com.ucne.tecnicostarea2.presentation.TecnicoViewModel
 import com.ucne.tecnicostarea2.ui.theme.TecnicosTarea2Theme
 import kotlinx.serialization.Serializable
 import androidx.navigation.compose.composable
+import com.ucne.tecnicostarea2.presentation.servicio.ServicioViewModel
+import com.ucne.tecnicostarea2.presentation.servicio.ServicioListScreen
+import com.ucne.tecnicostarea2.presentation.servicio.ServicioScreen
+import com.ucne.tecnicostarea2.data.local.repository.ServicioRepository
 import com.ucne.tecnicostarea2.data.local.repository.TipoTecnicoRepository
 import com.ucne.tecnicostarea2.presentation.Tipo.TipoTecnicoListScreen
 import com.ucne.tecnicostarea2.presentation.Tipo.TipoTecnicoScreen
 import com.ucne.tecnicostarea2.presentation.Tipo.TipoTecnicoViewModel
+
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var tecnicoDb: TecnicoDb
@@ -37,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
         val repository = TecnicoRepository(tecnicoDb.tecnicoDao())
         val repository2 = TipoTecnicoRepository(tecnicoDb.tipoTecnicoDao())
+        val servicioRepository = ServicioRepository(tecnicoDb.servicioDao())
         enableEdgeToEdge()
         setContent {
             TecnicosTarea2Theme {
@@ -86,6 +95,36 @@ class MainActivity : ComponentActivity() {
                             )
 
                     }
+                    composable<Screen.ServicioList> {
+                        ServiciosListScreen(
+                            viewModel = viewModel {
+                                ServicioViewModel(
+                                    servicioRepository,
+                                    0,
+                                    repository
+                                )
+                            },
+                            onVerServicio = {
+                                navController.navigate(Screen.Servicio(it.servicioTecnicoId ?: 0))
+                            },
+                            navController = navController,
+                            onAgregarServicio = {
+                                navController.navigate(Screen.Servicio(0))
+                            }
+                        )
+                    }
+                    composable<Screen.Servicio> {
+                        val args = it.toRoute<Screen.Servicio>()
+                        ServicioScreen(viewModel = viewModel {
+                            ServicioViewModel(
+                                servicioRepository,
+                                args.servicioTecnicoId,
+                                repository
+                            )
+                        },
+                            navController = navController)
+                    }
+
                 }
             }
         }
@@ -104,13 +143,18 @@ sealed class Screen {
 
     @Serializable
     data class TipoTecnico(val tipoTecnicoId: Int) : Screen()
+    @Serializable
+    object ServicioList : Screen()
+
+    @Serializable
+    data class Servicio(val servicioTecnicoId: Int) : Screen()
 }
 
 
-/*@Preview(showBackground = true)
+@Preview(showBackground = true)
 @Composable
 fun Preview() {
     TecnicosTarea2Theme {
 
     }
-}*/
+}
