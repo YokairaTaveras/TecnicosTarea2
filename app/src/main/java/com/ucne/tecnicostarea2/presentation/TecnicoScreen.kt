@@ -29,6 +29,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -38,29 +39,41 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.ucne.tecnicostarea2.Screen
+import com.ucne.tecnicostarea2.data.local.entities.TipoTecnicoEntity
+import com.ucne.tecnicostarea2.presentation.components.Combobox
 import com.ucne.tecnicostarea2.presentation.components.TopAppBar
 import com.ucne.tecnicostarea2.ui.theme.TecnicosTarea2Theme
 import kotlinx.coroutines.launch
 
 var nombreRepetido by mutableStateOf(false)
+
 @Composable
 fun TecnicoScreen(
     viewModel: TecnicoViewModel,
-    navController: NavHostController){
+    navController: NavHostController
+){
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-        TecnicoBody(
+
+        val tecnico by viewModel.tecnico.collectAsStateWithLifecycle()
+
+        val tipoTecnicos by viewModel.tipoTecnicos.collectAsStateWithLifecycle()
+
+    TecnicoBody(
             uiState = uiState,
             onSaveTecnico = { viewModel.saveTecnico() },
             onDeleteTecnico = { viewModel.deleteTecnico() },
             onNewTecnico = { viewModel.newTecnico() },
             onNombreChanged =  viewModel::onNombreChanged,
             onSueldoHoraChanged = viewModel::onSueldoHoraChanged,
+            onTipoTecnicoChanged = viewModel::onTipoTecnicoChanged,
+            tipoTecnicos = tipoTecnicos,
             navController = navController
         )
     }
 
 var sueldoHoraVacio by  mutableStateOf(false)
 var nombreRepetidoVacio by  mutableStateOf(false)
+var tipoTecnicoLleno by mutableStateOf(false)
 @Composable
 private fun TecnicoBody(
     uiState: TecnicoUIState,
@@ -69,10 +82,13 @@ private fun TecnicoBody(
     onNombreChanged: (String) -> Unit,
     onSueldoHoraChanged: (String) -> Unit,
     onNewTecnico: () -> Unit,
-    navController: NavHostController
+    navController: NavHostController,
+    tipoTecnicos: List<TipoTecnicoEntity>,
+    onTipoTecnicoChanged: (String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     var drawerState = rememberDrawerState(DrawerValue.Closed)
+    var Seleccione by remember { mutableStateOf<TipoTecnicoEntity?>(null) }
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -149,6 +165,24 @@ private fun TecnicoBody(
                             color = MaterialTheme.colorScheme.error
                         )
                     }
+
+                    Combobox(
+                        label = "Tipos de tecnicos",
+                        items = tipoTecnicos,
+                        selectedItem = Seleccione,
+                        selectedItemString = {
+                            it?.let {
+                                "${it.descripcion}"
+                            } ?: ""
+                        },
+                        onItemSelected = {
+                            onTipoTecnicoChanged(it?.descripcion ?: "")
+                            Seleccione = it
+                            uiState.tipo = it?.descripcion
+                        },
+                        itemTemplate = { Text(text = it.descripcion ?: "") },
+                        isErrored = tipoTecnicoLleno
+                    )
                     Spacer(modifier = Modifier.padding(2.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -216,7 +250,9 @@ private fun TecnicoPreview() {
             onSueldoHoraChanged = {},
             onNewTecnico = {},
             onDeleteTecnico = {},
-            navController = rememberNavController()
+            onTipoTecnicoChanged = {},
+            navController = rememberNavController(),
+            tipoTecnicos = emptyList(),
         )
     }
 }

@@ -70,6 +70,11 @@ class TecnicoViewModel(private val repository: TecnicoRepository, private val te
         }
     }
 
+    fun onTipoTecnicoChanged(tipoTecnico: String) {
+        uiState.update {
+            it.copy(tipo = tipoTecnico)
+        }
+    }
 
 }
 
@@ -79,6 +84,8 @@ data class TecnicoUIState(
     var nombreError: String? = null,
     var sueldoHora: String = null.toString(),
     var sueldoHoraError: String? = null,
+    var tipo: String? = null
+
 )
 
 fun TecnicoUIState.toEntity() = TecnicoEntity(
